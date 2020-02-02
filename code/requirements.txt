@@ -1,0 +1,4 @@
+pandas-profiling[notebook,html]
+scikit-learn==0.22.1
+psycopg2-binary
+pymongo

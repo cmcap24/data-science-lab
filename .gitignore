@@ -1,3 +1,10 @@
 .env
 .idea
+.DS_Store
+
+# python related files
 __init__.py
+
+# directories
+/code/scratch
+/code/data
