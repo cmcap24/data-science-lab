@@ -4,6 +4,8 @@
 
 # python related files
 __init__.py
+__pycache__
+*.pyc
 
 # directories
 /code/scratch
