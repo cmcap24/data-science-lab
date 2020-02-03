@@ -1,6 +1,7 @@
 import gzip
 import itertools
 import logging
+from datetime import datetime
 from io import BytesIO
 from operator import itemgetter
 
@@ -21,7 +22,8 @@ logging.basicConfig(level=logging.INFO)
 class AirBnBScraper(object):
     BASE_URL = 'http://insideairbnb.com/get-the-data.html'
 
-    def __init__(self):
+    def __init__(self, start_date='2019-01-01'):
+        self.start_date = start_date
         self.listing_links = None
         self.calendar_links = None
         self.review_links = None
@@ -57,11 +59,23 @@ class AirBnBScraper(object):
     def _get_file_links(self, city='new-york'):
         logging.info(f'Collecting Links {city.upper()} for...')
         response = urlopen(self.BASE_URL)
-        soup = BeautifulSoup(response, from_encoding=response.info().get_param('charset'))
+        # soup = BeautifulSoup(response, from_encoding=response.info().get_param('charset'))
+        soup = BeautifulSoup(response, 'html.parser')
 
         link_list = [link['href'] for link in soup.find_all('a', href=True)]
 
-        filtered_link_list = list(filter(lambda link: link.endswith('.csv.gz') and city in link, link_list))
+        filtered_link_list = list(
+            filter(
+                lambda link:
+                link.endswith('.csv.gz')
+                and (city in link)
+                and (
+                    datetime.strptime(link.split('/')[-3], '%Y-%m-%d')
+                    > datetime.strptime(self.start_date, '%Y-%m-%d')
+                ),
+                link_list
+            )
+        )
         self.listing_links = [link for link in filtered_link_list if 'listings' in link]
         self.calendar_links = [link for link in filtered_link_list if 'calendar' in link]
         self.review_links = [link for link in filtered_link_list if 'review' in link]
