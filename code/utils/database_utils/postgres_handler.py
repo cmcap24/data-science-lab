@@ -3,7 +3,7 @@ logging.basicConfig(level=logging.INFO)
 
 import psycopg2
 
-from utils.data_store_utils.data_store_config import postgres_config
+from utils.database_utils.database_config import postgres_config
 
 
 class PostgresHandler(object):
@@ -33,11 +33,9 @@ class PostgresHandler(object):
         return cls._instance
 
     def __init__(self, db_name=None):
-        if db_name:
-            pass
-            # super().__new__(PostgresHandler(), db_name=db_name)
         self.connection = self._instance.connection
         self.cursor = self._instance.cursor
+        self.db_name = db_name
 
     def query(self, query_string):
         try:
@@ -89,6 +87,13 @@ class PostgresHandler(object):
 
     def drop_table(self, table_name):
         self.query(f'DROP TABLE IF EXISTS {table_name}')
+
+    def insert_values(self, table_name, column_names, data):
+        column_string = str(tuple(column_names)).replace("'", "")
+        insert_query_string = f'''INSERT INTO {table_name} {column_string} VALUES '''
+        data_string = b','.join(self.cursor.mogrify("%s", (val, )) for val in data).decode("utf-8")
+        insert_query_string += data_string
+        self.query(insert_query_string)
 
     def __del__(self):
         self.connection.close()
