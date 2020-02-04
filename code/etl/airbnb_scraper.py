@@ -22,8 +22,9 @@ logging.basicConfig(level=logging.INFO)
 class AirBnBScraper(object):
     BASE_URL = 'http://insideairbnb.com/get-the-data.html'
 
-    def __init__(self, start_date='2019-01-01'):
+    def __init__(self, city='new-york', start_date='2019-01-01'):
         self.start_date = start_date
+        self.city = city
         self.listing_links = None
         self.calendar_links = None
         self.review_links = None
@@ -42,8 +43,10 @@ class AirBnBScraper(object):
         for listing in listings_list:
             _id = listing['listing_id']
             temp_dict = listing.copy()
-            temp_dict['review_list'] = review_dict[_id]
-            temp_dict['calendar_list'] = calendar_dict[_id]
+            if _id in review_dict.keys():
+                temp_dict['review_list'] = review_dict[_id]
+            if _id in calendar_dict.keys():
+                temp_dict['calendar_list'] = calendar_dict[_id]
             result_list.append(temp_dict)
 
         self._push_data_to_mongodb(result_list)
@@ -56,8 +59,8 @@ class AirBnBScraper(object):
         mongo_handler.insert_values(collection_name='listings', data=data)
         logging.info('Push Complete')
 
-    def _get_file_links(self, city='new-york'):
-        logging.info(f'Collecting Links {city.upper()} for...')
+    def _get_file_links(self):
+        logging.info(f'Collecting Links for {self.city.upper()}...')
         response = urlopen(self.BASE_URL)
         # soup = BeautifulSoup(response, from_encoding=response.info().get_param('charset'))
         soup = BeautifulSoup(response, 'html.parser')
@@ -68,7 +71,7 @@ class AirBnBScraper(object):
             filter(
                 lambda link:
                 link.endswith('.csv.gz')
-                and (city in link)
+                and (self.city in link)
                 and (
                     datetime.strptime(link.split('/')[-3], '%Y-%m-%d')
                     > datetime.strptime(self.start_date, '%Y-%m-%d')
