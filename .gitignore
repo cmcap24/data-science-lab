@@ -10,3 +10,5 @@ __pycache__
 # directories
 /code/scratch
 /code/data
+./mongodb
+./postgres
