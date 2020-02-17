@@ -3,7 +3,7 @@ logging.basicConfig(level=logging.INFO)
 
 import pandas as pd
 
-from code.data_validation.base import Validator
+from data_validation.base import Validator
 
 
 class PandasDataFrameValidator(Validator):
