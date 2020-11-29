@@ -3,3 +3,4 @@ pandas-profiling[notebook,html]
 psycopg2-binary
 pymongo
 scikit-learn==0.22.1
+tensorflow
